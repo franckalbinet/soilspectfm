@@ -204,6 +204,7 @@ class ToAbsorbance(BaseEstimator, TransformerMixin):
 class Resample(BaseEstimator, TransformerMixin):
     "Resampling transformer compatible with scikit-learn."
     def __init__(self, 
+                 source_x: np.ndarray, # Source x-axis points (wavenumbers or wavelengths)
                  target_x: np.ndarray, # Target x-axis points (wavenumbers or wavelengths) for resampling
                  interpolation_kind: str='cubic' # Type of spline interpolation to use
                  ):
@@ -211,12 +212,9 @@ class Resample(BaseEstimator, TransformerMixin):
         
     def fit(self, 
             X: np.ndarray, # Spectral data to be resampled
-            x: np.ndarray=None, # Original x-axis points (wavenumbers or wavelengths)
-            y: np.ndarray=None # Original y-axis points
+            y: np.ndarray=None # Not used
             ):
-        "Fit the transformer"
-        if x is None: raise ValueError("Original x-axis (wavenumbers or wavelengths) must be provided")
-        self.original_x_ = np.asarray(x)
+        "No-op in that particular case"
         return self
     
     def transform(self, 
@@ -227,7 +225,7 @@ class Resample(BaseEstimator, TransformerMixin):
         X_transformed = np.zeros((X.shape[0], len(self.target_x)))
         
         for i in range(X.shape[0]):
-            cs = CubicSpline(self.original_x_, X[i])
+            cs = CubicSpline(self.source_x, X[i])
             X_transformed[i] = cs(self.target_x)
         
         return X_transformed
