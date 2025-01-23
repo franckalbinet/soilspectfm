@@ -6,3 +6,4 @@ website:
         contents:
           - 00_core.ipynb
           - 01_visualization.ipynb
+          - 02_utils.ipynb
