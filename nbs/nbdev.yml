@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "soilspectfm"
+  site-url: "https://franckalbinet.github.io/soilspectfm"
+  description: "Soil infrared spectra preprocessing utilities"
+  repo-branch: main
+  repo-url: "https://github.com/franckalbinet/soilspectfm"
