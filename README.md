@@ -20,7 +20,12 @@ pip install soilspectfm
 ## Quick Start
 
 ``` python
-from soilspectfm.core import SNV, TakeDerivative, ToAbsorbance
+from soilspectfm.core import (SNV, 
+                              TakeDerivative, 
+                              ToAbsorbance, 
+                              Resample, 
+                              WaveletDenoise)
+
 from sklearn.pipeline import Pipeline
 ```
 
@@ -50,8 +55,9 @@ Implemented transforms developed so far include:
   - [x]
     [`MSC`](https://franckalbinet.github.io/soilspectfm/core.html#msc):
     Multiplicative Scatter Correction
-  - [ ] `Detrend`: Detrend the spectrum (SOON)
-  - [ ] `ALS`: Asymmetric Least Squares detrend the spectrum (SOON)
+  - [ ] `Detrend`: Detrend the spectrum (coming soon …)
+  - [ ] `ALS`: Asymmetric Least Squares detrend the spectrum (coming
+    soon …)
 
 - **Derivatives**:
 
@@ -59,21 +65,25 @@ Implemented transforms developed so far include:
     [`TakeDerivative`](https://franckalbinet.github.io/soilspectfm/core.html#takederivative):
     Take derivative (1st, 2nd, etc.) of the spectrum and apply
     Savitzky-Golay smoothing
-  - [ ] `GapSegmentDerivative`: …
+  - [ ] `GapSegmentDerivative`: (coming soon …)
 
 - **Smoothing**:
 
   - [x]
     [`WaveletDenoise`](https://franckalbinet.github.io/soilspectfm/core.html#waveletdenoise):
     Wavelet denoising
-  - [ ] `SavGolSmooth`: Savitzky-Golay smoothing
+  - [x]
+    [`SavGolSmooth`](https://franckalbinet.github.io/soilspectfm/core.html#savgolsmooth):
+    Savitzky-Golay smoothing
 
 - **Other transformations**:
 
   - [x]
     [`ToAbsorbance`](https://franckalbinet.github.io/soilspectfm/core.html#toabsorbance):
     Transform the spectrum to absorbance
-  - [ ] `Resample`: Resample the spectrum to a new wavenumber range
+  - [x]
+    [`Resample`](https://franckalbinet.github.io/soilspectfm/core.html#resample):
+    Resample the spectrum to a new wavenumber range
 
 Transforms are fully compatible with
 [scikit-learn](https://scikit-learn.org/stable/) and can be used in a
@@ -82,6 +92,7 @@ pipeline as follows:
 ``` python
 pipe = Pipeline([
     ('snv', SNV()), # Standard Normal Variate transformation
+    ('denoise', WaveletDenoise()), # Wavelet denoising
     ('deriv', TakeDerivative(window_length=11, polyorder=2, deriv=1)) # First derivative
 ])
 
