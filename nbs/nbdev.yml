@@ -2,8 +2,9 @@ project:
   output-dir: _docs
 
 website:
-  title: "soilspectfm"
+  title: "SoilSpecTfm"
   site-url: "https://franckalbinet.github.io/soilspectfm"
-  description: "Soil infrared spectra preprocessing utilities"
+  description: "A Python package providing scikit-learn compatible transforms for spectroscopic data preprocessing."
   repo-branch: main
   repo-url: "https://github.com/franckalbinet/soilspectfm"
+
