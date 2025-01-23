@@ -16,7 +16,8 @@ import pywt
 
 # %% ../nbs/00_core.ipynb 7
 class SNV(BaseEstimator, TransformerMixin):
-    """Standard Normal Variate transformation with flexible centering and scaling.
+    """
+    Standard Normal Variate transformation with flexible centering and scaling.
     
     Common centering functions:
     
@@ -26,6 +27,7 @@ class SNV(BaseEstimator, TransformerMixin):
         - lambda x, **kw: 0: No centering, preserves absolute values
     
     Common scaling functions:
+    
         - np.std: Standard choice, assumes normal distribution
         - lambda x, **kw: np.sqrt(np.mean(x**2, **kw)): RMS, good for baseline variations
         - scipy.stats.iqr: Robust to outliers, ignores extreme peaks
