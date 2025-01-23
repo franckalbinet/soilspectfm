@@ -73,7 +73,7 @@ class MSC(BaseEstimator, TransformerMixin):
         if self.reference_ is None: raise ValueError("MSC not fitted. Call 'fit' first.")
         return np.array(parallel(self._transform_single, X, n_workers=self.n_jobs))
 
-# %% ../nbs/00_core.ipynb 16
+# %% ../nbs/00_core.ipynb 17
 class TakeDerivative(BaseEstimator, TransformerMixin):
     "Creates scikit-learn derivation + savitsky-golay smoothing custom transformer"
     def __init__(self, 
@@ -91,7 +91,7 @@ class TakeDerivative(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         return savgol_filter(X, self.window_length, self.polyorder, self.deriv)
 
-# %% ../nbs/00_core.ipynb 20
+# %% ../nbs/00_core.ipynb 22
 class ToAbsorbance(BaseEstimator, TransformerMixin):
     "Creates scikit-learn transformer to transform reflectance to absorbance"
     def __init__(self, 
