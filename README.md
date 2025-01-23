@@ -63,7 +63,9 @@ Implemented transforms developed so far include:
 
 - **Smoothing**:
 
-  - [ ] `WaveletDenoise`: Wavelet denoising
+  - [x]
+    [`WaveletDenoise`](https://franckalbinet.github.io/soilspectfm/core.html#waveletdenoise):
+    Wavelet denoising
   - [ ] `SavGolSmooth`: Savitzky-Golay smoothing
 
 - **Other transformations**:
