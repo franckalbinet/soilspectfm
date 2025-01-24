@@ -1,0 +1,159 @@
+[
+  {
+    "objectID": "utils.html",
+    "href": "utils.html",
+    "title": "Utils",
+    "section": "",
+    "text": "source\n\nload_toy_mir\n\n load_toy_mir ()\n\nLoad the toy MIR dataset.\n\n\nExported source\ntoy_mir_url = 'https://gist.githubusercontent.com/franckalbinet/a7476d0413e88bcc162c553e43f182fa/raw/a45dc573eec558b019909bdd1830fbb207511fcb/mir-spectra-sample.csv'\ntoy_noisy_mir_url = 'https://gist.githubusercontent.com/franckalbinet/3e4e16f592175edad724c22841eb88dd/raw/c6a3f83c0146fbdc826aa4e9c1c448120a281a2e/rt_mir_bruker.csv'\n\n\n\n\nExported source\ndef load_toy_mir():\n    \"\"\"Load the toy MIR dataset.\"\"\"\n    df_mir = pd.read_csv(toy_mir_url)\n    ws = df_mir.columns.astype(int).to_numpy()\n    X = df_mir.values\n    return X, ws\n\n\n\nX, ws = load_toy_mir()\nprint(f'X shape: {X.shape}, First 5 wavenumbers: {ws[:5]}')\n\nX shape: (50, 1701), First 5 wavenumbers: [600 602 604 606 608]\n\n\n\nsource\n\n\nload_toy_noisy_mir\n\n load_toy_noisy_mir ()\n\n*Load the toy noisy MIR dataset.\nScans acquired in the context of a K spiking experiment: In-progress publication.*\n\n\nExported source\ndef load_toy_noisy_mir():\n    \"\"\"\n    Load the toy noisy MIR dataset.\n    \n    Scans acquired in the context of a K spiking experiment: In-progress publication.\n    \"\"\"\n    df = pd.read_csv(toy_noisy_mir_url)\n    sample_ids = df.sample_id.values\n    wavenumbers = df.columns[1:].to_numpy().astype(float)\n    spectra = df.iloc[:, 1:].to_numpy()\n    return spectra, wavenumbers, sample_ids\n\n\n\nX, wns, smp_id = load_toy_noisy_mir()\nprint(f'X shape: {X.shape}, First 5 wavenumbers: {wns[:5]}')\n\nX shape: (48, 3315), First 5 wavenumbers: [599.91153162 600.93702142 601.96251122 602.98800102 604.01349081]",
+    "crumbs": [
+      "Source",
+      "Utils"
+    ]
+  },
+  {
+    "objectID": "core.html",
+    "href": "core.html",
+    "title": "Core API",
+    "section": "",
+    "text": "from soilspecdata.datasets.ossl import get_ossl\nfrom sklearn.pipeline import Pipeline\nfrom soilspectfm.visualization import plot_spectra\nfrom matplotlib import pyplot as plt\nfrom soilspectfm.visualization import plot_spectra_comparison\nfrom soilspectfm.utils import load_toy_mir, load_toy_noisy_mir\nX, ws = load_toy_mir()",
+    "crumbs": [
+      "Source",
+      "Core API"
+    ]
+  },
+  {
+    "objectID": "core.html#baseline-corrections",
+    "href": "core.html#baseline-corrections",
+    "title": "Core API",
+    "section": "Baseline corrections",
+    "text": "Baseline corrections\n\nsource\n\nSNV\n\n SNV (center_func:Callable=&lt;function mean at 0x7f2b71133130&gt;,\n      scale_func:Callable=&lt;function std at 0x7f2b71133330&gt;,\n      eps:float=1e-10)\n\n*Standard Normal Variate transformation with flexible centering and scaling.\nCommon centering functions:\n- np.mean: Standard choice, sensitive to outliers\n- np.median: Robust to outliers, slower computation\n- np.min: Ensures positive values, sensitive to noise\n- lambda x, **kw: 0: No centering, preserves absolute values\nCommon scaling functions:\n- np.std: Standard choice, assumes normal distribution\n- lambda x, **kw: np.sqrt(np.mean(x**2, **kw)): RMS, good for baseline variations\n- scipy.stats.iqr: Robust to outliers, ignores extreme peaks\n- lambda x, **kw: np.max(x, **kw) - np.min(x, **kw): Preserves relative peaks\n- lambda x, **kw: np.median(np.abs(x - np.median(x, **kw)), **kw): Most robust, slower*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\ncenter_func\nCallable\nmean\nFunction to center the data\n\n\nscale_func\nCallable\nstd\nFunction to scale the data\n\n\neps\nfloat\n1e-10\nSmall value to avoid division by zero\n\n\n\n\n\nExported source\nclass SNV(BaseEstimator, TransformerMixin):\n    \"\"\"\n    Standard Normal Variate transformation with flexible centering and scaling.\n    \n    Common centering functions:\n    \n        - np.mean: Standard choice, sensitive to outliers\n        - np.median: Robust to outliers, slower computation\n        - np.min: Ensures positive values, sensitive to noise\n        - lambda x, **kw: 0: No centering, preserves absolute values\n    \n    Common scaling functions:\n    \n        - np.std: Standard choice, assumes normal distribution\n        - lambda x, **kw: np.sqrt(np.mean(x**2, **kw)): RMS, good for baseline variations\n        - scipy.stats.iqr: Robust to outliers, ignores extreme peaks\n        - lambda x, **kw: np.max(x, **kw) - np.min(x, **kw): Preserves relative peaks\n        - lambda x, **kw: np.median(np.abs(x - np.median(x, **kw)), **kw): Most robust, slower\n    \"\"\"\n    def __init__(self, \n                 center_func: Callable=np.mean, # Function to center the data\n                 scale_func: Callable=np.std, # Function to scale the data\n                 eps: float=1e-10 # Small value to avoid division by zero\n                 ):\n        store_attr()\n    def fit(self, X, y=None): return self\n    def transform(self, \n                  X: np.ndarray # Spectral data to be transformed\n                  ) -&gt; np.ndarray: # Transformed spectra\n        center = self.center_func(X, axis=1, keepdims=True)\n        scale = self.scale_func(X - center, axis=1, keepdims=True) + self.eps\n        return (X - center) / scale\n\n\n\nX_tfm = SNV().fit_transform(X)\n\n\nplot_spectra_comparison(\n    X,\n    SNV().fit_transform(X),\n    ws,\n    raw_title='Raw Spectra',\n    transformed_title='Transformed Spectra'\n);\n\n\n\n\n\n\n\n\n\nsource\n\n\nMSC\n\n MSC (reference_method:Union[str,numpy.ndarray]='mean',\n      n_jobs:Optional[int]=None)\n\nMultiplicative Scatter Correction with fastai-style implementation\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nreference_method\nUnion\nmean\nMethod to compute reference spectrum (‘mean’/‘median’) or custom reference spectrum\n\n\nn_jobs\nOptional\nNone\nNumber of parallel jobs to run. None means using all processors\n\n\n\n\n\nExported source\nclass MSC(BaseEstimator, TransformerMixin):\n    \"Multiplicative Scatter Correction with fastai-style implementation\"\n    def __init__(self, \n                 reference_method: Union[str, np.ndarray] = 'mean', # Method to compute reference spectrum ('mean'/'median') or custom reference spectrum\n                 n_jobs: Optional[int] = None # Number of parallel jobs to run. None means using all processors\n                 ):\n        store_attr()\n        self.reference_ = None\n        \n    def _compute_reference(self, x: np.ndarray):\n        \"Compute reference spectrum from array using specified method\"\n        if isinstance(self.reference_method, str):\n            assert self.reference_method in ['mean', 'median'], \"reference_method must be 'mean' or 'median'\"\n            return np.mean(x, axis=0) if self.reference_method == 'mean' else np.median(x, axis=0)\n        return np.array(self.reference_method)\n    \n    def fit(self, X: np.ndarray, y=None):\n        \"Compute the reference spectrum\"\n        self.reference_ = self._compute_reference(X)\n        return self\n    \n    def _transform_single(self, \n                          x: np.ndarray # Spectral data to be transformed\n                          ) -&gt; np.ndarray: # Transformed spectra\n        \"Transform a single spectrum\"\n        coef = np.polyfit(self.reference_, x, deg=1)\n        return (x - coef[1]) / coef[0]\n    \n    def transform(self, \n                  X: np.ndarray # Spectral data to be transformed\n                  ) -&gt; np.ndarray: # Transformed spectra\n        \"Apply MSC to the spectra\"\n        if self.reference_ is None: raise ValueError(\"MSC not fitted. Call 'fit' first.\")\n        return np.array(parallel(self._transform_single, X, n_workers=self.n_jobs))\n\n\n\nX_tfm = MSC(reference_method='median').fit_transform(X)\n\n\nplot_spectra_comparison(\n    X,\n    MSC().fit_transform(X),\n    ws,\n    raw_title='Raw Spectra',\n    transformed_title='MSC Transformed Spectra'\n);\n\n\n\n\n\n\n\n\nReferences: - https://eigenvector.com/wp-content/uploads/2020/01/RobustFittingtoBasisFunctionsIII.pdf - https://nirpyresearch.com/two-methods-baseline-correction-spectral-data/ - https://diposit.ub.edu/dspace/bitstream/2445/188026/1/2014_IEEE_Adaptive_MarcoS_postprint.pdf\n\nclass ALS(BaseEstimator, TransformerMixin):\n    \"Asymmetric least squares detrending\"\n    pass",
+    "crumbs": [
+      "Source",
+      "Core API"
+    ]
+  },
+  {
+    "objectID": "core.html#derivatives",
+    "href": "core.html#derivatives",
+    "title": "Core API",
+    "section": "Derivatives",
+    "text": "Derivatives\n\nsource\n\nTakeDerivative\n\n TakeDerivative (window_length=11, polyorder=1, deriv=1)\n\nCreates scikit-learn derivation + savitsky-golay smoothing custom transformer\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nwindow_length\nint\n11\nWindow length for the savgol filter\n\n\npolyorder\nint\n1\nPolynomial order for the savgol filter\n\n\nderiv\nint\n1\nDerivation degree\n\n\n\n\n\nExported source\nclass TakeDerivative(BaseEstimator, TransformerMixin):\n    \"Creates scikit-learn derivation + savitsky-golay smoothing custom transformer\"\n    def __init__(self, \n                 window_length=11, # Window length for the savgol filter\n                 polyorder=1, # Polynomial order for the savgol filter\n                 deriv=1 # Derivation degree\n                 ):\n        self.window_length = window_length\n        self.polyorder = polyorder\n        self.deriv = deriv\n\n    def fit(self, X, y=None):\n        return self\n\n    def transform(self, X, y=None):\n        return savgol_filter(X, self.window_length, self.polyorder, self.deriv)\n\n\nHow to use the TakeDerivative transformer in combination with the SNV transformer?\n\npipe = Pipeline([('snv', SNV()), \n                 ('deriv', TakeDerivative(deriv=1))\n                 ])\n\nX_tfm = pipe.fit_transform(X)\n\n\nplot_spectra_comparison(\n    X,\n    MSC().fit_transform(X),\n    ws,\n    raw_title='Raw Spectra',\n    transformed_title='SNV + Derivative (1st order) Transformed Spectra'\n);",
+    "crumbs": [
+      "Source",
+      "Core API"
+    ]
+  },
+  {
+    "objectID": "core.html#smoothing",
+    "href": "core.html#smoothing",
+    "title": "Core API",
+    "section": "Smoothing",
+    "text": "Smoothing\n\nsource\n\nWaveletDenoise\n\n WaveletDenoise (wavelet:str='db6', level:Optional[int]=None,\n                 threshold_mode:str='soft')\n\nWavelet denoising transformer compatible with scikit-learn.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nwavelet\nstr\ndb6\nWavelet to use for decomposition\n\n\nlevel\nOptional\nNone\nDecomposition level. If None, maximum level is used\n\n\nthreshold_mode\nstr\nsoft\nThresholding mode (‘soft’/‘hard’)\n\n\n\n\n\nExported source\nclass WaveletDenoise(BaseEstimator, TransformerMixin):\n    \"Wavelet denoising transformer compatible with scikit-learn.\"    \n    def __init__(self, \n                 wavelet:str='db6', # Wavelet to use for decomposition\n                 level:Optional[int]=None, # Decomposition level. If None, maximum level is used\n                 threshold_mode:str='soft' # Thresholding mode  ('soft'/'hard')\n                 ):\n        store_attr()\n        \n    def _denoise_single(self, spectrum):\n        \"Denoise a single spectrum\"\n        # If level is None, calculate maximum possible level\n        if self.level is None:\n            self.level_ = pywt.dwt_max_level(len(spectrum), \n                                             pywt.Wavelet(self.wavelet).dec_len)\n        else:\n            self.level_ = self.level\n            \n        coeffs = pywt.wavedec(spectrum, self.wavelet, level=self.level_)\n        \n        # Calculate threshold using MAD estimator\n        detail_coeffs = np.concatenate([c for c in coeffs[1:]])\n        sigma = np.median(np.abs(detail_coeffs)) / 0.6745\n        threshold = sigma * np.sqrt(2 * np.log(len(spectrum)))\n        \n        # Apply threshold to detail coefficients\n        new_coeffs = list(coeffs)\n        for i in range(1, len(coeffs)):\n            new_coeffs[i] = pywt.threshold(coeffs[i], \n                                         threshold * (1/2**((self.level_-i)/2)),\n                                         mode=self.threshold_mode)\n\n        denoised = pywt.waverec(new_coeffs, self.wavelet)\n        return denoised[:len(spectrum)]\n    \n    def fit(self, X, y=None):\n        \"Fit the transformer (no-op)\"\n        return self\n    \n    def transform(self, X):\n        \"Apply wavelet denoising to spectra.\"\n        X = np.asarray(X)\n        X_denoised = np.zeros_like(X)\n        for i in range(X.shape[0]): X_denoised[i] = self._denoise_single(X[i])\n        return X_denoised\n\n\n\nX, ws, _ = load_toy_noisy_mir()\nprint(f'X shape: {X.shape}, First 5 wavenumbers: {ws[:5]}')\n\ndenoiser = WaveletDenoise(wavelet='db6', level=5, threshold_mode='soft')\nX_denoised = denoiser.fit_transform(X)\nplot_spectra(X - X_denoised, ws, alpha=0.1, title='Raw Spectra - Wavelet Denoised');\n\nX shape: (48, 3315), First 5 wavenumbers: [599.91153162 600.93702142 601.96251122 602.98800102 604.01349081]\n\n\n\n\n\n\n\n\n\n\nsource\n\n\nSavGolSmooth\n\n SavGolSmooth (window_length:int=15, polyorder:int=3, deriv:int=0)\n\nSavitzky-Golay smoothing transformer compatible with scikit-learn.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nwindow_length\nint\n15\nWindow length for the savgol filter\n\n\npolyorder\nint\n3\nPolynomial order for the savgol filter\n\n\nderiv\nint\n0\nDerivation degree\n\n\n\n\n\nExported source\nclass SavGolSmooth(BaseEstimator, TransformerMixin):\n    \"Savitzky-Golay smoothing transformer compatible with scikit-learn.\"\n    def __init__(self, \n                 window_length:int=15, # Window length for the savgol filter\n                 polyorder:int=3, # Polynomial order for the savgol filter\n                 deriv:int=0 # Derivation degree\n                 ):\n        store_attr()\n        \n    def _validate_params(self):\n        \"Validate parameters.\"\n        if self.window_length % 2 == 0:\n            raise ValueError(\"window_length must be odd\")\n        if self.window_length &lt;= self.polyorder:\n            raise ValueError(\"window_length must be greater than polyorder\")\n        if self.deriv &gt; self.polyorder:\n            raise ValueError(\"deriv must be &lt;= polyorder\")\n            \n    def fit(self, \n            X:np.ndarray,# Spectral data to be smoothed.\n            y:Optional[np.ndarray]=None # Ignored\n            ):\n        \"Validate parameters and fit the transformer.\"\n        self._validate_params()\n        return self\n    \n    def transform(self, \n                  X: np.ndarray # Spectral data to be smoothed.\n                  ) -&gt; np.ndarray: # Smoothed spectra\n        \"Apply Savitzky-Golay filter to spectra.\"\n        X = np.asarray(X)\n        X_smoothed = np.zeros_like(X)\n        \n        for i in range(X.shape[0]):\n            X_smoothed[i] = savgol_filter(X[i], \n                                        window_length=self.window_length,\n                                        polyorder=self.polyorder,\n                                        deriv=self.deriv)\n        \n        return X_smoothed\n\n\n\nsmoother = SavGolSmooth(window_length=15, polyorder=3)\nX_smoothed = smoother.fit_transform(X)\nplot_spectra_comparison(X, X_smoothed, ws, raw_title='Raw Spectra', transformed_title='SavGolSmooth Transformed Spectra');",
+    "crumbs": [
+      "Source",
+      "Core API"
+    ]
+  },
+  {
+    "objectID": "core.html#other-transformations",
+    "href": "core.html#other-transformations",
+    "title": "Core API",
+    "section": "Other Transformations",
+    "text": "Other Transformations\n\nsource\n\nToAbsorbance\n\n ToAbsorbance (eps:float=1e-05)\n\nCreates scikit-learn transformer to transform reflectance to absorbance\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\neps\nfloat\n1e-05\nSmall value to avoid log(0)\n\n\n\n\n\nExported source\nclass ToAbsorbance(BaseEstimator, TransformerMixin):\n    \"Creates scikit-learn transformer to transform reflectance to absorbance\"\n    def __init__(self, \n                 eps: float=1e-5 # Small value to avoid log(0)\n                 ): self.eps = eps\n    def fit(self, X, y=None): return self\n    def transform(self, X, y=None): return -np.log10(np.clip(X, self.eps, 1))\n\n\n\nsource\n\n\nResample\n\n Resample (source_x:numpy.ndarray, target_x:numpy.ndarray,\n           interpolation_kind:str='cubic')\n\nResampling transformer compatible with scikit-learn.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nsource_x\nndarray\n\nSource x-axis points (wavenumbers or wavelengths)\n\n\ntarget_x\nndarray\n\nTarget x-axis points (wavenumbers or wavelengths) for resampling\n\n\ninterpolation_kind\nstr\ncubic\nType of spline interpolation to use\n\n\n\n\n\nExported source\nclass Resample(BaseEstimator, TransformerMixin):\n    \"Resampling transformer compatible with scikit-learn.\"\n    def __init__(self, \n                 source_x: np.ndarray, # Source x-axis points (wavenumbers or wavelengths)\n                 target_x: np.ndarray, # Target x-axis points (wavenumbers or wavelengths) for resampling\n                 interpolation_kind: str='cubic' # Type of spline interpolation to use\n                 ):\n        store_attr()\n        \n    def fit(self, \n            X: np.ndarray, # Spectral data to be resampled\n            y: np.ndarray=None # Not used\n            ):\n        \"No-op in that particular case\"\n        return self\n    \n    def transform(self, \n                  X: np.ndarray # Spectral data to be resampled\n                  ):\n        \"Resample spectra to new x-axis points.\"\n        X = np.asarray(X)\n        X_transformed = np.zeros((X.shape[0], len(self.target_x)))\n        \n        for i in range(X.shape[0]):\n            cs = CubicSpline(self.source_x, X[i])\n            X_transformed[i] = cs(self.target_x)\n        \n        return X_transformed\n\n\n\nnew_ws = np.arange(600, 4001, 2)  # New wavenumber axis\nresampler = Resample(source_x=ws, target_x=new_ws)\nX_resampled = resampler.fit_transform(X)\nprint(f'X_resampled.shape: {X_resampled.shape}, New wavenumbers: {new_ws[:10]}')\n\nplot_spectra(X, ws, ascending=False,title='Original Spectra', alpha=0.2);\nplot_spectra(X_resampled, new_ws, ascending=False,title='Resampled Spectra', alpha=0.2, color='steelblue');\n\nX_resampled.shape: (48, 1701), New wavenumbers: [600 602 604 606 608 610 612 614 616 618]\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nsource\n\n\nTrim\n\n Trim (ws:numpy.ndarray, w_min:Optional[float]=None,\n       w_max:Optional[float]=None)\n\nTrims the spectra to the specified wavenumbers (or wavelengths) range.\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nws\nndarray\n\nWavenumbers or wavelengths\n\n\nw_min\nOptional\nNone\nMinimum wavenumber or wavelength\n\n\nw_max\nOptional\nNone\nMaximum wavenumber or wavelength\n\n\n\n\n\nExported source\nclass Trim(BaseEstimator, TransformerMixin):\n    \"Trims the spectra to the specified wavenumbers (or wavelengths) range.\"\n    def __init__(self, \n                 ws: np.ndarray, # Wavenumbers or wavelengths\n                 w_min: Optional[float]=None, # Minimum wavenumber or wavelength\n                 w_max: Optional[float]=None # Maximum wavenumber or wavelength\n                 ):\n        store_attr()\n        \n    def fit(self, \n            X: np.ndarray, # Spectra to be trimmed\n            y: Optional[np.ndarray]=None # Ignored\n            ):\n        \"Store wavenumbers and compute indices for trimming\"\n        self.mask_ = (self.ws &gt;= (self.w_min if self.w_min else -np.inf)) & \\\n                     (self.ws &lt;= (self.w_max if self.w_max else np.inf))\n        return self\n    \n    def transform(self, X: np.ndarray) -&gt; np.ndarray:\n        \"Trim the spectra\"\n        return X[:, self.mask_]\n    \n    def get_wavenumbers(self) -&gt; np.ndarray:\n        \"Return the trimmed wavenumbers\"\n        return self.ws[self.mask_]\n\n\n\ntrimmer = Trim(ws, w_min=650, w_max=4000)\nX_trimmed = trimmer.fit_transform(X)\n\nprint(f'X_trimmed.shape: {X_trimmed.shape}, Trimmed wavenumbers: {trimmer.get_wavenumbers()[:10]}')\nplot_spectra(X_trimmed, trimmer.get_wavenumbers(), title='Trimmed Spectra', ascending=False);\n\nX_trimmed.shape: (50, 1676), Trimmed wavenumbers: [650 652 654 656 658 660 662 664 666 668]",
+    "crumbs": [
+      "Source",
+      "Core API"
+    ]
+  },
+  {
+    "objectID": "visualization.html",
+    "href": "visualization.html",
+    "title": "Visualization",
+    "section": "",
+    "text": "Let’s load some data to get started using the soilspecdata package.\n\nfrom soilspecdata.datasets.ossl import get_ossl\nfrom sklearn.pipeline import Pipeline\nfrom soilspectfm.core import SNV\nfrom soilspectfm.utils import load_toy_mir\n\n\nsource\n\nplot_spectra\n\n plot_spectra (X:numpy.ndarray, w:numpy.ndarray, sample:int=50,\n               ascending:bool=True, ax:matplotlib.axes._axes.Axes=None,\n               **kwargs)\n\nPlot spectral data with customizable matplotlib parameters.\n\n\n\n\n\n\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nX\nndarray\n\nArray of shape (n_samples, n_features) containing spectral data\n\n\nw\nndarray\n\nArray of wavelengths/wavenumbers corresponding to spectral features\n\n\nsample\nint\n50\nNumber of spectra to randomly sample (if None, plot all spectra)\n\n\nascending\nbool\nTrue\nWhether to plot wavelengths/wavenumbers in ascending order\n\n\nax\nAxes\nNone\nOptional matplotlib axes for plotting. If None, creates new figure\n\n\nkwargs\n\n\n\n\n\nReturns\nAxes\n\nAdditional parameters for plot customization\n\n\n\n\n\nExported source\ndeep_blue, blue, orange, red = '#0571b0', '#92c5de', '#f4a582', '#ca0020'\n\n\n\n\nExported source\ndef plot_spectra(\n    X: np.ndarray, # Array of shape (n_samples, n_features) containing spectral data\n    w: np.ndarray, # Array of wavelengths/wavenumbers corresponding to spectral features\n    sample: int = 50, # Number of spectra to randomly sample (if None, plot all spectra)\n    ascending: bool = True, # Whether to plot wavelengths/wavenumbers in ascending order\n    ax: plt.Axes = None, # Optional matplotlib axes for plotting. If None, creates new figure\n    **kwargs # Additional parameters for plot customization\n) -&gt; plt.Axes:\n    \"\"\"Plot spectral data with customizable matplotlib parameters.\"\"\"\n    def _prepare_data(X: np.ndarray, sample: int) -&gt; np.ndarray:\n        \"\"\"Prepare data for plotting by sampling and reshaping if needed.\"\"\"\n        if len(X.shape) == 1:\n            return X.reshape(1, -1)\n        if sample is not None:\n            idx = np.random.randint(X.shape[0], size=sample)\n            return X[idx,:]\n        return X\n\n    def _setup_axes(w: np.ndarray, ascending: bool, ax: plt.Axes, **params) -&gt; plt.Axes:\n        \"\"\"Setup the axes with basic parameters.\"\"\"\n        if ax is None:\n            _, ax = plt.subplots(figsize=params.get('figsize', (20, 4)))\n        \n        _min, _max = np.min(w), np.max(w)\n        _order = [_min, _max] if ascending else [_max, _min]\n        ax.set_xlim(*_order)\n        ax.grid(True, linestyle='--', alpha=0.7)\n        ax.locator_params(axis=\"x\", nbins=20)\n        return ax\n\n    def _set_labels(ax: plt.Axes, **params) -&gt; None:\n        \"\"\"Set axes labels and title.\"\"\"\n        ax.set_xlabel(params.get('xlabel', 'Wavenumber'))\n        ax.set_ylabel(params.get('ylabel', 'Absorbance'))\n        if params.get('title'):\n            ax.set_title(params.get('title'))\n\n    # Separate figure-level and line-level parameters\n    fig_params = {\n        'figsize': kwargs.pop('figsize', (20, 4)),\n        'xlabel': kwargs.pop('xlabel', 'Wavenumber'),\n        'ylabel': kwargs.pop('ylabel', 'Absorbance'),\n        'title': kwargs.pop('title', None)\n    }\n\n    # Set defaults for line parameters\n    line_params = {\n        'alpha': 0.6,\n        'color': '#333',\n        'lw': 1\n    }\n    line_params.update(kwargs)\n\n    # Execute plotting sequence\n    X = _prepare_data(X, sample)\n    ax = _setup_axes(w, ascending, ax, **fig_params)\n    \n    for spectrum in X:\n        ax.plot(w, spectrum, **line_params)\n    \n    _set_labels(ax, **fig_params)\n    \n    return ax\n\n\n\nX, ws = load_toy_mir()\nax = plot_spectra(X, ws, ascending=False, alpha=0.5)\n\n\n\n\n\n\n\n\n\n# Create subplots and customize them\nfig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 7))\n\n# Plot raw spectra on first subplot\nax1 = plot_spectra(\n    X, \n    ws,\n    ax=ax1,\n    ascending=False,\n    color='black',\n    alpha=0.4,\n    lw=0.5,\n    xlabel='Wavenumber (cm$^{-1}$)',\n    title='Raw Spectra'\n)\n\n# Plot preprocessed spectra on second subplot\nax2 = plot_spectra(\n    SNV().fit_transform(X),\n    ws,\n    ax=ax2,\n    ascending=False,\n    color=deep_blue,\n    alpha=0.4,\n    lw=0.5,\n    xlabel='Wavenumber (cm$^{-1}$)',\n    title='Preprocessed (SNV) Spectra'\n)\n\n# Further customize if needed\nax1.set_ylim(0, 2.5)\nax2.set_ylim(-2.5, 2.5)\nplt.tight_layout()\n\n\n\n\n\n\n\n\nOr abstracting the plotting into a function for demonstration purposes (and convenience):\n\nsource\n\n\nplot_spectra_comparison\n\n plot_spectra_comparison (X_raw:numpy.ndarray,\n                          X_transformed:numpy.ndarray,\n                          wavenumbers:numpy.ndarray, raw_title:str='Raw\n                          Spectra', transformed_title:str='Transformed\n                          Spectra', figsize:tuple=(15, 7), **kwargs)\n\nPlot raw and transformed spectra for comparison.\n\n\nExported source\ndef plot_spectra_comparison(\n    X_raw: np.ndarray,\n    X_transformed: np.ndarray,\n    wavenumbers: np.ndarray,\n    raw_title: str = 'Raw Spectra',\n    transformed_title: str = 'Transformed Spectra',\n    figsize: tuple = (15, 7),\n    **kwargs):\n    \"Plot raw and transformed spectra for comparison.\"\n    raw_color = kwargs.pop('raw_color', 'black')\n    transformed_color = kwargs.pop('transformed_color', 'steelblue')\n    \n    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize)\n    \n    common_params = {\n        'ascending': False,\n        'alpha': kwargs.pop('alpha', 0.6),\n        'lw': kwargs.pop('lw', 0.5),\n        'xlabel': 'Wavenumber (cm$^{-1}$)',\n        **kwargs\n    }\n    \n    # Plot raw spectra\n    ax1 = plot_spectra(\n        X_raw,\n        wavenumbers,\n        ax=ax1,\n        color=raw_color,\n        title=raw_title,\n        **common_params\n    )\n    \n    # Plot transformed spectra\n    ax2 = plot_spectra(\n        X_transformed,\n        wavenumbers,\n        ax=ax2,\n        color=transformed_color,\n        title=transformed_title,\n        **common_params\n    )\n    \n    plt.tight_layout()\n    return fig, (ax1, ax2)\n\n\n\nplot_spectra_comparison(\n    X,\n    SNV().fit_transform(X),\n    ws,\n    raw_title='Raw Spectra',\n    transformed_title='Transformed Spectra'\n);",
+    "crumbs": [
+      "Source",
+      "Visualization"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "SoilSpecTfm",
+    "section": "",
+    "text": "Spectral Processing Tools for Soil Spectroscopy\nBy translating specialized soil spectroscopy methods into the scikit-learn framework, SoilSpecTfm and SoilSpecData connect this niche domain with Python’s vast machine learning ecosystem, making advanced ML/DL tools accessible to soil scientists.\nImplemented transforms developed so far include:\nKey Features:\nAll transformers follow scikit-learn conventions:",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "SoilSpecTfm",
+    "section": "Installation",
+    "text": "Installation\npip install soilspectfm",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#quick-start",
+    "href": "index.html#quick-start",
+    "title": "SoilSpecTfm",
+    "section": "Quick Start",
+    "text": "Quick Start\n\nfrom soilspectfm.core import (SNV, \n                              TakeDerivative, \n                              ToAbsorbance, \n                              Resample, \n                              WaveletDenoise)\n\nfrom sklearn.pipeline import Pipeline\n\n\nLoading OSSL dataset\nLet’s use OSSL dataset as an example using SoilSpecData package.\n\nfrom soilspecdata.datasets.ossl import get_ossl\n\n\nossl = get_ossl()\nmir_data = ossl.get_mir()\n\n\n\nPreprocessing pipeline\nTransforms are fully compatible with scikit-learn and can be used in a pipeline as follows:\n\npipe = Pipeline([\n    ('snv', SNV()), # Standard Normal Variate transformation\n    ('denoise', WaveletDenoise()), # Wavelet denoising\n    ('deriv', TakeDerivative(window_length=11, polyorder=2, deriv=1)) # First derivative\n])\n\nX_tfm = pipe.fit_transform(mir_data.spectra)\n\n\n\nQuick visualization\n\nfrom soilspectfm.visualization import plot_spectra\nfrom matplotlib import pyplot as plt\n\n\nfig, (ax1, ax2) = plt.subplots(2, 1, figsize=(15, 7))\n\nax1 = plot_spectra(\n    mir_data.spectra, \n    mir_data.wavenumbers,\n    ax=ax1,\n    ascending=False,\n    color='black',\n    alpha=0.6,\n    lw=0.5,\n    xlabel='Wavenumber (cm$^{-1}$)',\n    title='Raw Spectra'\n)\n\nax2 = plot_spectra(\n    X_tfm,\n    mir_data.wavenumbers,\n    ax=ax2,\n    ascending=False,\n    color='steelblue',\n    alpha=0.6,\n    lw=0.5,\n    xlabel='Wavenumber (cm$^{-1}$)',\n    title='SNV + Derivative (1st order) Transformed Spectra'\n)\n\nplt.tight_layout()",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#dependencies",
+    "href": "index.html#dependencies",
+    "title": "SoilSpecTfm",
+    "section": "Dependencies",
+    "text": "Dependencies\n\nfastcore\nnumpy\nscipy\nscikit-learn\nmatplotlib",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#further-references",
+    "href": "index.html#further-references",
+    "title": "SoilSpecTfm",
+    "section": "Further references",
+    "text": "Further references\n\nhttps://orange-spectroscopy.readthedocs.io/en/latest/widgets/preprocess-spectra.html",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#contributing",
+    "href": "index.html#contributing",
+    "title": "SoilSpecTfm",
+    "section": "Contributing",
+    "text": "Contributing\n\nDeveloper guide\nIf you are new to using nbdev here are some useful pointers to get you started.\nInstall spectfm in Development mode:\n# make sure spectfm package is installed in development mode\n$ pip install -e .\n\n# make changes under nbs/ directory\n# ...\n\n# compile to have changes apply to spectfm\n$ nbdev_prepare",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#license",
+    "href": "index.html#license",
+    "title": "SoilSpecTfm",
+    "section": "License",
+    "text": "License\nThis project is licensed under the Apache2 License - see the LICENSE file for details.",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  },
+  {
+    "objectID": "index.html#support",
+    "href": "index.html#support",
+    "title": "SoilSpecTfm",
+    "section": "Support",
+    "text": "Support\nFor questions and support, please open an issue on GitHub.",
+    "crumbs": [
+      "SoilSpecTfm"
+    ]
+  }
+]
