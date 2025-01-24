@@ -50,6 +50,9 @@ Implemented transforms developed so far include:
   - [x]
     [`Resample`](https://franckalbinet.github.io/soilspectfm/core.html#resample):
     Resample the spectrum to a new wavenumber range
+  - [x]
+    [`Trim`](https://franckalbinet.github.io/soilspectfm/core.html#trim):
+    Trim the spectrum to a specific wavenumber range
 
 **Key Features**:
 
