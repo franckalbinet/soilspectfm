@@ -1,3 +1,35 @@
 [build-system]
-requires = ["setuptools>=64.0"]
+requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "soilspectfm"
+dynamic = ["version"]
+description = "Soil infrared spectra preprocessing utilities"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "Apache-2.0"}
+authors = [{name = "Franck Albinet", email = "franckalbinet@gmail.com"}]
+keywords = ['nbdev', 'jupyter', 'notebook', 'python']
+classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+dependencies = ['fastcore', 'scikit-learn', 'matplotlib', 'PyWavelets']
+
+[project.urls]
+Repository = "https://github.com/franckalbinet/soilspectfm"
+Documentation = "https://franckalbinet.github.io/soilspectfm"
+
+[project.entry-points.nbdev]
+soilspectfm = "soilspectfm._modidx:d"
+
+[project.optional-dependencies]
+dev = ['soilspecdata', 'nbdev', 'ipykernel']
+
+[tool.setuptools.dynamic]
+version = {attr = "soilspectfm.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["soilspectfm"]
+
+[tool.nbdev]
+custom_sidebar = true
+title = 'SoilSpecTfm'
