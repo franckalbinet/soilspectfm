@@ -64,7 +64,7 @@ plot_spectra_comparison(
     transformed_title='SNV, wavelet denoising and first derivative');
 ```
 
-<img src="index_files/figure-commonmark/cell-4-output-1.png" width="1498" height="690" />
+![](index_files/figure-commonmark/cell-4-output-1.png)
 
 ## Modeling OSSL data
 

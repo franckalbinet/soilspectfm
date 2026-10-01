@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=64"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,10 +8,21 @@ dynamic = ["version"]
 description = "Scikit-learn transformers for preprocessing soil infrared spectra"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "Apache-2.0"}
+license = "Apache-2.0"
 authors = [{name = "Franck Albinet", email = "franckalbinet@gmail.com"}]
-keywords = ['nbdev', 'jupyter', 'notebook', 'python']
-classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+keywords = ['soil', 'spectroscopy', 'infrared', 'chemometrics', 'scikit-learn', 'preprocessing']
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"]
 dependencies = ['fastcore', 'scikit-learn', 'matplotlib', 'PyWavelets', 'numpy', 'scipy', 'pandas']
 
 [project.urls]
