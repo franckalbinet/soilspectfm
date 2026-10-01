@@ -7,3 +7,8 @@ website:
   description: "Soil infrared spectra preprocessing utilities"
   repo-branch: main
   repo-url: "https://github.com/franckalbinet/soilspectfm"
+
+format-links:
+  - html
+  - format: commonmark
+    text: Markdown

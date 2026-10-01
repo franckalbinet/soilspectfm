@@ -7,12 +7,12 @@ name = "soilspectfm"
 dynamic = ["version"]
 description = "Soil infrared spectra preprocessing utilities"
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [{name = "Franck Albinet", email = "franckalbinet@gmail.com"}]
 keywords = ['nbdev', 'jupyter', 'notebook', 'python']
 classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
-dependencies = ['fastcore', 'scikit-learn', 'matplotlib', 'PyWavelets']
+dependencies = ['fastcore', 'scikit-learn', 'matplotlib', 'PyWavelets', 'numpy', 'scipy', 'pandas']
 
 [project.urls]
 Repository = "https://github.com/franckalbinet/soilspectfm"
@@ -22,13 +22,16 @@ Documentation = "https://franckalbinet.github.io/soilspectfm"
 soilspectfm = "soilspectfm._modidx:d"
 
 [project.optional-dependencies]
-dev = ['soilspecdata', 'nbdev', 'ipykernel']
+dev = ['soilspecdata>=0.2', 'nbdev', 'ipykernel']
 
 [tool.setuptools.dynamic]
 version = {attr = "soilspectfm.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["soilspectfm"]
+include = ["soilspectfm*"]
+
+[tool.setuptools.package-data]
+soilspectfm = ["data/*.csv.gz"]
 
 [tool.nbdev]
 custom_sidebar = true
