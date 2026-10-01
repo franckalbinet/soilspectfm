@@ -53,3 +53,15 @@ div.description {
 .navbar-brand .navbar-title {
     font-weight: normal;
 }
+
+td:first-child,
+td:first-child code {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.cell-output-display img {
+    max-width: 100%;
+    height: auto;
+}

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "soilspectfm"
 dynamic = ["version"]
-description = "Soil infrared spectra preprocessing utilities"
+description = "Scikit-learn transformers for preprocessing soil infrared spectra"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
@@ -22,7 +22,7 @@ Documentation = "https://franckalbinet.github.io/soilspectfm"
 soilspectfm = "soilspectfm._modidx:d"
 
 [project.optional-dependencies]
-dev = ['soilspecdata>=0.2', 'nbdev', 'ipykernel']
+dev = ['soilspecdata>=0.2', 'nbdev', 'ipykernel', 'twine']
 
 [tool.setuptools.dynamic]
 version = {attr = "soilspectfm.__version__"}

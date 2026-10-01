@@ -4,7 +4,7 @@ project:
 website:
   title: "SoilSpecTfm"
   site-url: "https://franckalbinet.github.io/soilspectfm"
-  description: "Soil infrared spectra preprocessing utilities"
+  description: "Scikit-learn transformers for preprocessing soil infrared spectra"
   repo-branch: main
   repo-url: "https://github.com/franckalbinet/soilspectfm"
 

@@ -35,7 +35,7 @@ uv sync --extra dev
 
 ## Quick start
 
-`from soilspectfm.all import *` imports every transformer, the toy dataset loaders and the plotting functions. Load the toy MIR spectra that ship with the package, then preprocess them with standard normal variate (SNV), wavelet denoising and a first derivative:
+`from soilspectfm.all import *` imports every transformer, the toy dataset loaders and the plotting functions. Load the toy MIR spectra that ship with the package. Spectrum edges are often noisy, and one toy spectrum has a faulty first point, so [`Trim`](https://franckalbinet.github.io/soilspectfm/preprocessing.html#trim) keeps the wavenumbers from 650 cm⁻¹. Then preprocess the spectra with standard normal variate (SNV), wavelet denoising and a first derivative:
 
 ``` python
 from soilspectfm.all import *
@@ -44,20 +44,27 @@ from sklearn.pipeline import Pipeline
 
 ``` python
 X, ws = load_toy_mir()
-pipe = Pipeline([('snv', SNV()), ('denoise', WaveletDenoise()), ('deriv', SavitzkyGolay(window_length=11, polyorder=2, deriv=1))])
+trim = Trim(ws, w_min=650)
+X, ws = trim.fit_transform(X), trim.get_wavenumbers()
+pipe = Pipeline([
+    ('snv', SNV()),
+    ('denoise', WaveletDenoise()),
+    ('deriv', SavitzkyGolay(window_length=11, polyorder=2, deriv=1))])
 X_tfm = pipe.fit_transform(X)
 X_tfm.shape
 ```
 
-    (50, 1701)
+    (50, 1676)
 
 Compare the raw and preprocessed spectra:
 
 ``` python
-plot_spectra_comparison(X, X_tfm, ws, transformed_title='SNV, wavelet denoising and first derivative');
+plot_spectra_comparison(
+    X, X_tfm, ws,
+    transformed_title='SNV, wavelet denoising and first derivative');
 ```
 
-![](index_files/figure-commonmark/cell-4-output-1.png)
+<img src="index_files/figure-commonmark/cell-4-output-1.png" width="1498" height="690" />
 
 ## Modeling OSSL data
 
@@ -71,7 +78,10 @@ from sklearn.model_selection import cross_val_score
 
 ``` python
 X, y, ids = load_ossl().mir().xy('cec_usda.a723_cmolc.kg')
-model = Pipeline([('snv', SNV()), ('deriv', SavitzkyGolay(window_length=11, polyorder=2, deriv=1)), ('pls', PLSRegression(n_components=10))])
+model = Pipeline([
+    ('snv', SNV()),
+    ('deriv', SavitzkyGolay(window_length=11, polyorder=2, deriv=1)),
+    ('pls', PLSRegression(n_components=10))])
 cross_val_score(model, X, y, cv=5, scoring='r2')
 ```
 
@@ -98,7 +108,3 @@ Report bugs and ask questions in [GitHub issues](https://github.com/franckalbine
 ## License
 
 SoilSpecTfm is under the [Apache 2.0](LICENSE) licence.
-
-## Citation
-
-- [SoilSpecTfm](https://github.com/franckalbinet/soilspectfm): Albinet, F., 2026. SoilSpecTfm, version 0.1.0. https://github.com/franckalbinet/soilspectfm
