@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 0.1.1
+
+### New Features
+
+- Update the package metadata and description, and trim the README quick start ([#16](https://github.com/franckalbinet/soilspectfm/issues/16))
+
+
 ## 0.1.0
 
 ### Breaking Changes
