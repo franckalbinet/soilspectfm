@@ -2,6 +2,13 @@
 
 <!-- do not remove -->
 
+## 0.1.2
+
+### Bugs Squashed
+
+- A `Pipeline` with `SNV`, `SavitzkyGolay` or `ToAbsorbance` cannot `transform` after `fit` ([#17](https://github.com/franckalbinet/soilspectfm/issues/17))
+
+
 ## 0.1.1
 
 ### New Features
