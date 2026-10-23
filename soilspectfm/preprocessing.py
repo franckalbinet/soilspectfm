@@ -27,6 +27,7 @@ class SNV(BaseEstimator, TransformerMixin):
     ):
         store_attr()
     def fit(self, X, y=None): return self
+    def __sklearn_is_fitted__(self): return True # `fit` learns nothing
     def transform(self,
         X: np.ndarray # Spectral data to be transformed
     ) -> np.ndarray: # Transformed spectra
@@ -81,6 +82,7 @@ class SavitzkyGolay(BaseEstimator, TransformerMixin):
         if self.window_length <= self.polyorder: raise ValueError("window_length must be greater than polyorder")
         if self.deriv > self.polyorder: raise ValueError("deriv must be <= polyorder")
         return self
+    def __sklearn_is_fitted__(self): return True # `fit` learns nothing
 
     def transform(self,
         X:np.ndarray # Spectra, one per row
@@ -132,6 +134,7 @@ class ToAbsorbance(BaseEstimator, TransformerMixin):
         eps: float=1e-5 # Small value to avoid log(0)
     ): self.eps = eps
     def fit(self, X, y=None): return self
+    def __sklearn_is_fitted__(self): return True # `fit` learns nothing
     def transform(self, X, y=None): return -np.log10(np.clip(X, self.eps, 1))
 
 # %% ../nbs/00_preprocessing.ipynb #98f442b8
